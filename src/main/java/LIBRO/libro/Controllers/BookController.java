@@ -26,25 +26,6 @@ public class BookController {
     private final BookService bookService;
 
 
-    @PostMapping
-    public ResponseEntity<BookDto> createBook( @Valid @RequestBody  BookDto bookDto) throws BookException {
-
-     BookDto created=bookService.createBook(bookDto);
-
-     return ResponseEntity.ok(created);
-    }
-
-
-    @PostMapping("/bulk")
-    public ResponseEntity<?> createBulkBook( @Valid @RequestBody List<BookDto> bookDtolist) throws BookException {
-
-          List<BookDto >created=bookService.createBooksInBulk(bookDtolist);
-
-        return ResponseEntity.ok(created);
-    }
-
-
-
 
 
     @GetMapping("/{id}")
@@ -53,39 +34,6 @@ public class BookController {
         return ResponseEntity.ok(book);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<BookDto> updateBook(@PathVariable Long id, @RequestBody BookDto bookDto) throws BookException {
-        BookDto updated=bookService.updateBook(id, bookDto);
-        return ResponseEntity.ok(updated);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteBook(@PathVariable Long id)
-            throws BookException {
-
-        bookService.deleteBook(id);
-
-        ApiResponse response = new ApiResponse(
-                "Book deleted - soft delete",
-                true
-        );
-
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/{id}/permanent")
-    public ResponseEntity<ApiResponse> hardDeleteBook(@PathVariable Long id)
-            throws BookException {
-
-        bookService.hardDeleteBook(id);
-
-        ApiResponse response = new ApiResponse(
-                "Book deleted - permanent delete",
-                true
-        );
-
-        return ResponseEntity.ok(response);
-    }
 
 //     one more search method
 
