@@ -27,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.security.auth.login.LoginException;
 import java.time.LocalDateTime;
@@ -49,6 +50,9 @@ public class AuthServiceimpl  implements AuthService {
     private final EmailService emailService;
 
     private final PassWordResetTokenRepo  passWordResetTokenRepo;
+
+    @Value("${app.frontend.reset-password-url:http://localhost:5173/reset-password}")
+    private String resetPasswordPageUrl;
     @Override
     public AuthResponse login(String email, String password) throws UserException {
 
@@ -114,15 +118,12 @@ public class AuthServiceimpl  implements AuthService {
 
         User saved = userRepo.save(created);
 
-//        set securoty contesholder
-        Authentication authentication = new UsernamePasswordAuthenticationToken(saved.getEmail(), saved.getPassword());
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(saved.getEmail());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails.getUsername(), null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-
-
-//        jwt create
-
-        String jwt= jwtProvider.generateToken(authentication);
+        String jwt = jwtProvider.generateToken(authentication);
 
         AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(jwt);
@@ -136,8 +137,6 @@ public class AuthServiceimpl  implements AuthService {
 
     @Transactional
     public void createResetPassWordToken(String email) throws UserException, MessagingException {
-        String frontendUrl="";
-
     User user=userRepo.findByEmail(email);
     if(user==null){
         throw new UserException("Email dont exists ");
@@ -154,7 +153,7 @@ public class AuthServiceimpl  implements AuthService {
 
     passWordResetTokenRepo.save(resetPassWordToken);
 
-    String resetLink=frontendUrl+token;
+    String resetLink = resetPasswordPageUrl + "?token=" + token;
     String Subject="PassWord Reset Request ";
     String body="you requested to reset you password . Use this link (valid for 5 min) " + resetLink;
 

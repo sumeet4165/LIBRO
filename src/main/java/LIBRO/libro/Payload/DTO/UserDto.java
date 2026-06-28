@@ -2,7 +2,6 @@ package LIBRO.libro.Payload.DTO;
 
 import LIBRO.libro.Domain.AuthProvider;
 import LIBRO.libro.Domain.UserRole;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

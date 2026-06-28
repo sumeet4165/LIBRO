@@ -3,11 +3,13 @@ package LIBRO.libro.Config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -16,40 +18,48 @@ import java.util.Set;
 @Service
 public class JwtProvider {
 
-    private  SecretKey Key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
+    private final SecretKey key;
 
-    public  String generateToken(Authentication authentication) {
-        Collection<? extends GrantedAuthority> authorities =authentication.getAuthorities();
-        String roles=populateAuthorities(authorities);
+    private final String secretString;
 
-        return Jwts.builder().issuedAt(new Date()).expiration(new Date(new Date().getTime()+86400000))
-                .claim("email" , authentication.getName())
-                .claim("authorities" , roles)
-                .signWith(Key)
+    public JwtProvider(@Value("${libro.jwt.secret}") String secret) {
+        this.secretString = secret;
+        if (secretString.length() < 32) {
+            throw new IllegalStateException("libro.jwt.secret must be at least 32 characters");
+        }
+        this.key = Keys.hmacShaKeyFor(secretString.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public byte[] getSigningSecretBytes() {
+        return secretString.getBytes(StandardCharsets.UTF_8);
+    }
+
+    public String generateToken(Authentication authentication) {
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        String roles = populateAuthorities(authorities);
+
+        return Jwts.builder()
+                .issuedAt(new Date())
+                .expiration(new Date(new Date().getTime() + 86400000L))
+                .claim("email", authentication.getName())
+                .claim("authorities", roles)
+                .signWith(key)
                 .compact();
     }
 
-
-    public  String getEmailFromToken( String jwt) {
-        jwt=jwt.substring(7);
-
-        Claims claims = Jwts.parser().verifyWith(Key).build().parseSignedClaims(jwt).getPayload();
-
-
+    public String getEmailFromToken(String jwt) {
+        if (jwt != null && jwt.startsWith("Bearer ")) {
+            jwt = jwt.substring(7);
+        }
+        Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(jwt).getPayload();
         return String.valueOf(claims.get("email"));
     }
 
-
-    public  String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {
-
+    public String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {
         Set<String> authoritiesSet = new HashSet<>();
-        for(GrantedAuthority grantedAuthority : authorities){
+        for (GrantedAuthority grantedAuthority : authorities) {
             authoritiesSet.add(grantedAuthority.getAuthority());
         }
-
         return String.join(",", authoritiesSet);
-
     }
 }
-
-

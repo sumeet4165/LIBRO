@@ -42,6 +42,7 @@ public class BookController {
     @GetMapping
     public ResponseEntity<PageResponse<BookDto>> searchBooks(
 
+            @RequestParam(required = false) String searchTerm,
             @RequestParam(required = false) Long genreId,
             @RequestParam(required = false , defaultValue = "false") Boolean availableOnly,
             @RequestParam(defaultValue = "true") boolean activeOnly,
@@ -54,6 +55,7 @@ public class BookController {
         // Build search request from query parameters
         BookSearchRequest searchRequest = new BookSearchRequest();
 
+        searchRequest.setSearchTerm(searchTerm);
         searchRequest.setGenreId(genreId);
         searchRequest.setAvailableOnly(availableOnly);
 
@@ -86,6 +88,7 @@ public class BookController {
 
 
     }
+
 
 
 

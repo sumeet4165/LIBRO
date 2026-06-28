@@ -99,4 +99,5 @@ public class GenreController {
 
         return ResponseEntity.ok(genreService.getBookCountByGenre(id));
     }
+
 }

@@ -9,7 +9,8 @@ import LIBRO.libro.Payload.Request.BookSearchRequest;
 import LIBRO.libro.Payload.Response.PageResponse;
 import LIBRO.libro.Repositeries.BookRepo;
 import LIBRO.libro.Service.BookService;
-import lombok.RequiredArgsConstructor;
+import LIBRO.libro.Service.ReservationService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,12 +23,17 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-
 public class BookServiceimpl implements BookService {
 
     private final BookRepo bookRepo;
     private final BookMapper bookMapper;
+    private final ReservationService reservationService;
+
+    public BookServiceimpl(BookRepo bookRepo, BookMapper bookMapper, @Lazy ReservationService reservationService) {
+        this.bookRepo = bookRepo;
+        this.bookMapper = bookMapper;
+        this.reservationService = reservationService;
+    }
 
     @Override
     public BookDto createBook(BookDto bookDto) throws BookException {
@@ -83,8 +89,15 @@ public class BookServiceimpl implements BookService {
 
         existing.isAvailableCopiesValid();
 
-        bookRepo.save(existing);
-        return bookMapper.toBookDto(existing);
+        Book saved = bookRepo.save(existing);
+        
+        if (saved.getAvailableCopies() != null && saved.getAvailableCopies() > 0) {
+            reservationService.assignAvailableBook(bookId);
+            // Reload entity in case it was updated by reservation assignment
+            saved = bookRepo.findById(bookId).orElse(saved);
+        }
+        
+        return bookMapper.toBookDto(saved);
 
     }
 
@@ -135,10 +148,11 @@ public class BookServiceimpl implements BookService {
 //     heloer methid
     private Pageable createPageable(int currpage, int size , String sortBy, String sortDirection ) {
 
-        size=Math.min(size,10);
-        size=Math.max(size,1);
+        size = Math.min(size, 50);
+        size = Math.max(size, 1);
 
-        Sort sort=sortDirection.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        String safeSortBy = (sortBy == null || sortBy.trim().isEmpty()) ? "createdAt" : sortBy;
+        Sort sort = "ASC".equalsIgnoreCase(sortDirection) ? Sort.by(safeSortBy).ascending() : Sort.by(safeSortBy).descending();
         return PageRequest.of(currpage,size,sort);
 
 

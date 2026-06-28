@@ -1,11 +1,11 @@
 package LIBRO.libro.Controllers;
 
 
+import LIBRO.libro.Entities.User;
 import LIBRO.libro.Payload.DTO.UserDto;
 import LIBRO.libro.Service.UserService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +32,7 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<UserDto> getProfile() {
+    public ResponseEntity<User> getProfile() {
         return new ResponseEntity<>(userService.getCurrentUser(), HttpStatus.OK);
 
     }

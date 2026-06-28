@@ -21,7 +21,7 @@ public class Userimpl implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public UserDto getCurrentUser() {
+    public User getCurrentUser() {
 //         from securty contest holder we can get
         String email= SecurityContextHolder.getContext().getAuthentication().getName();
         User user=userRepo.findByEmail(email);
@@ -30,7 +30,7 @@ public class Userimpl implements UserService {
             throw new UserException("User not found");
         }
 
-        return userMapper.toUserDto(user);
+        return user;
 
     }
 
@@ -39,5 +39,10 @@ public class Userimpl implements UserService {
         List<User> users=userRepo.findAll();
 
         return userMapper.toUserDtos(users);
+    }
+
+    @Override
+    public User findById(Long id) {
+        return userRepo.findById(id).orElseThrow(()->new UserException("User not found"));
     }
 }

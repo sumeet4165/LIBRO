@@ -66,9 +66,7 @@ public class AuthConroller {
 
         return ResponseEntity.ok(apiResponse);
 
-
     }
-
 
 }
 
