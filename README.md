@@ -1,6 +1,6 @@
-# LIBRO - Spring Boot Backend API
+# LIBRO - Spring Boot Backend
 
-This is the backend REST API service for **LIBRO (BookHive)**, a premium Library Management System. Built with Spring Boot and Java 21, this service handles user authentication, catalog management, book lending, reservation queues, fine tracking, subscription plan billing, and secure checkout payments.
+This is the backend for **LIBRO (BookHive)**, a premium Library Management System. Built with Spring Boot and Java 21, this service handles user authentication, catalog management, book lending, reservation queues, fine tracking, subscription plan billing, and secure checkout payments.
 
 ---
 
